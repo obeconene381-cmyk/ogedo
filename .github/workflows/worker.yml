@@ -1,0 +1,29 @@
+name: Ooredoo Browser Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      worker_id:
+        description: "معرف الجهاز"
+        required: true
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: تثبيت المتصفح والمكتبات
+        run: |
+          pip install playwright psutil aiohttp
+          playwright install chromium
+      - name: الاتصال بسيرفرك وبدء العمل
+        env:
+          MASTER_URL: ${{ secrets.MASTER_URL }}       # مثال: http://123.45.67.89:8080
+          WORKER_SECRET: ${{ secrets.WORKER_SECRET }} # نفس كلمة السر في master_server.py
+          WORKER_ID: ${{ github.event.inputs.worker_id }}
+        run: python -u github_worker.py
